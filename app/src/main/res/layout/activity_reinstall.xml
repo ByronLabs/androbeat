@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/Theme.AndrobeatAgent"
+    android:background="@color/backgroundColor"
+    tools:context=".presentation.view.ReinstallActivity">
+
+    <TextView
+        android:id="@+id/OriginalTokenTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Original Enroll Token"
+        android:textColor="#FFF9F9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/MainAccountTextInput" />
+
+    <TextView
+        android:id="@+id/MainAccountTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="204dp"
+        android:text="MainAccount"
+        android:textColor="#FFF9F9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/OriginalTokenTextInput"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout_marginTop="20dp"
+        android:background="@color/textInputBackground"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:textColor="#A09F9F"
+        android:textColorHint="#A09F9F"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/OriginalTokenTextView" />
+
+    <EditText
+        android:id="@+id/OriginalClientEmailTextInput"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout_marginTop="24dp"
+        android:background="@color/textInputBackground"
+        android:ems="10"
+        android:inputType="text"
+        android:textColor="#A09F9F"
+        android:textColorHint="#A09F9F"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/OriginalEmailTextView" />
+
+    <TextView
+        android:id="@+id/OriginalEmailTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:text="Original Client email"
+        android:textColor="#FFF9F9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/OriginalTokenTextInput" />
+
+    <EditText
+        android:id="@+id/MainAccountTextInput"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout_marginTop="12dp"
+        android:background="@color/textInputBackground"
+        android:ems="10"
+        android:inputType="text"
+        android:textColor="#A09F9F"
+        android:textColorHint="#A09F9F"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/MainAccountTextView" />
+
+    <Button
+        android:id="@+id/ReinstallButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        android:background="@drawable/button_background_selector"
+        android:text="Reinstall"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/OriginalClientEmailTextInput" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

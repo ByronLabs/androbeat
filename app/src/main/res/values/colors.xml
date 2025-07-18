@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="backgroundColor">#14101c</color>
+    <color name="textInputBackground">#262a3b</color>
+    <color name="tabBackGroundColor">#252d45</color>
+    <color name="buttonColorEnabled">#83FE9E</color>
+    <color name="buttonColorDisabled">#38453b</color>
+</resources>

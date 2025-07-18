@@ -1,0 +1,73 @@
+{
+  "index_patterns": [
+    "androbeat-*"
+  ],
+  "template": {
+    "mappings": {
+      "properties": {
+        "accelerometer": {
+          "type": "nested",
+          "properties": {
+            "x": {
+              "type": "float"
+            },
+            "y": {
+              "type": "float"
+            },
+            "z": {
+              "type": "float"
+            }
+          }
+        },
+        "gyroscope": {
+          "type": "nested",
+          "properties": {
+            "x": {
+              "type": "float"
+            },
+            "y": {
+              "type": "float"
+            },
+            "z": {
+              "type": "float"
+            }
+          }
+        },
+        "light": {
+          "type": "float"
+        },
+        "battery": {
+          "type": "nested",
+          "properties": {
+            "charging": {
+              "type": "boolean"
+            },
+            "chargingMode": {
+              "type": "keyword"
+            },
+            "percentage": {
+              "type": "float"
+            }
+          }
+        },
+        "network": {
+          "type": "nested",
+          "properties": {
+            "packet": {
+              "type": "keyword"
+            },
+            "received": {
+              "type": "float"
+            },
+            "sent": {
+              "type": "float"
+            }
+          }
+        },
+        "datetime": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}

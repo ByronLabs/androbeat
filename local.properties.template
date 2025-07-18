@@ -1,0 +1,10 @@
+sdk.dir= #/home/user/Android/Sdk
+# ANDROBEAT Configuration
+DEBUG_EXTRACTORS= #false
+DEBUG_RETROFIT= #false
+DEBUG_SENSORS= #false
+ELASTIC_HOST= #"https\://localhost:9200"
+ELASTIC_PASS= #"PASSWORD"
+ELASTIC_USER= #"user_elastic"
+READ_LOGS= #true
+ENROLLMENT_TOKEN= #"TOKEN"

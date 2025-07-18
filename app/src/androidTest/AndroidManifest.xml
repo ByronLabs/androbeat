@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.androbeat.androbeatagent.test">
+
+    <application>
+        <activity
+            android:name="com.androbeat.androbeatagent.HiltTestActivity"
+            android:exported="true" />
+    </application>
+</manifest>
