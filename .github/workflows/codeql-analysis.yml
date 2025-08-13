@@ -48,6 +48,9 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x gradlew
 
+    - name: Create local.properties
+      run: echo "sdk.dir=$ANDROID_SDK_ROOT" > app/local.properties
+
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
