@@ -2,9 +2,9 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: ["main"]
 
 jobs:
   analyze:
@@ -24,10 +24,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up JDK 21
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
-        java-version: '21'
+        java-version: '17'
         distribution: 'temurin'
 
     - name: Setup Android SDK
@@ -50,9 +50,10 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
+        build-mode: manual
 
     - name: Build with Gradle
-      run: ./gradlew assembleDebug -x test
+      run: ./gradlew --no-daemon --stacktrace assembleDebug -x test -x lint
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
