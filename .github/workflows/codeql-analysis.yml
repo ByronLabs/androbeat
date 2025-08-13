@@ -53,7 +53,7 @@ jobs:
         build-mode: manual
 
     - name: Build with Gradle
-      run: ./gradlew --no-daemon --stacktrace assembleDebug -x test -x lint
+      run: ./gradlew --no-daemon -Dorg.gradle.java.home="$JAVA_HOME" assembleDebug -x test -x lint
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
