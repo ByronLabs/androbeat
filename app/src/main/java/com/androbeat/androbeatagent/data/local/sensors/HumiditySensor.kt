@@ -18,8 +18,10 @@ class HumiditySensor(context: Context?, sensorType: Int) :
 
     init {
         super.setOnSensorValuesChangedListener { values: FloatArray? ->
-            humiditySensorModel = values!![0]
-            Logger.logInfo(TAG, String.format(Locale.US,"Humidity{%.4f}", values[0]))
+            values?.firstOrNull()?.let { humidityValue ->
+                humiditySensorModel = humidityValue
+                Logger.logInfo(TAG, String.format(Locale.US, "Humidity{%.4f}", humidityValue))
+            }
         }
         register()
     }

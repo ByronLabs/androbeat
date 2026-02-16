@@ -1,23 +1,21 @@
-// DataManagerImp.kt
 package com.androbeat.androbeatagent.data.repository.managers
 
 import android.accounts.AccountManager
 import android.content.Context
 import com.androbeat.androbeatagent.data.logger.Logger
+import com.androbeat.androbeatagent.data.model.dto.ElasticDataRequest
 import com.androbeat.androbeatagent.data.model.models.elastic.ElasticDataModel
 import com.androbeat.androbeatagent.data.model.models.elastic.ElasticDataModelBuilder
-import com.androbeat.androbeatagent.data.model.models.elastic.ResponseData
+import com.androbeat.androbeatagent.data.remote.rest.logstash.LogstashApiInterface
 import com.androbeat.androbeatagent.data.repository.AppDatabase
 import com.androbeat.androbeatagent.domain.data.DataManager
 import com.androbeat.androbeatagent.domain.data.DataProvider
-import com.androbeat.androbeatagent.domain.elastic.ElasticApiInterface
 import com.androbeat.androbeatagent.utils.ApplicationStatus
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.ExecutorService
@@ -27,16 +25,17 @@ import javax.inject.Named
 class DataManagerImp @Inject constructor(
     private val context: Context,
     @Named("RoomExecutor") private val roomExecutor: ExecutorService,
-    private val apiInterface: ElasticApiInterface,
+    private val logstashApiInterface: LogstashApiInterface,
     private val appDatabase: AppDatabase,
     @Named("DateFormatter") private val dateFormatter: SimpleDateFormat
 ) : DataManager {
-
 
     companion object {
         private const val TAG = "DataManagerImp"
         private const val NO_ACCOUNT_FOUND = "no-account-found"
     }
+
+    private val ioScope = CoroutineScope(Dispatchers.IO)
 
     val currentDateInDesiredFormat: String
         get() = dateFormatter.format(Date())
@@ -45,26 +44,22 @@ class DataManagerImp @Inject constructor(
 
     override fun saveDataOnElasticSearch(data: ElasticDataModel, isFromCache: Boolean) {
         val elasticIndex = "androbeat.events.$currentDateInDesiredFormat"
-        makeSaveDataOnElasticCall(data, elasticIndex, isFromCache)
+        makeSaveDataOnLogstashCall(data, elasticIndex, isFromCache)
     }
 
     override fun saveDataOnElasticSearch() {
-        val data: ElasticDataModel = ElasticDataModelBuilder().fromDataProviders(_providers)
+        val data = ElasticDataModelBuilder().fromDataProviders(_providers)
         val elasticIndex = "androbeat.events.$currentDateInDesiredFormat"
         val filledData = runBlocking { fillIdentificationInfo(context, data) }
-        makeSaveDataOnElasticCall(filledData, elasticIndex, false)
+        makeSaveDataOnLogstashCall(filledData, elasticIndex, false)
     }
 
-    private suspend fun getDeviceIdFromRoom(): String? {
-        return withContext(Dispatchers.IO) {
-            appDatabase.deviceIdDao().getDeviceId()?.deviceId
-        }
+    private suspend fun getDeviceIdFromRoom(): String? = withContext(Dispatchers.IO) {
+        appDatabase.deviceIdDao().getDeviceId()?.deviceId
     }
 
-    private suspend fun getClientIdFromRoom(): String? {
-        return withContext(Dispatchers.IO) {
-            appDatabase.clientIdDao().getClientId()?.name
-        }
+    private suspend fun getClientIdFromRoom(): String? = withContext(Dispatchers.IO) {
+        appDatabase.clientIdDao().getClientId()?.name
     }
 
     private suspend fun fillIdentificationInfo(
@@ -115,90 +110,25 @@ class DataManagerImp @Inject constructor(
         }
     }
 
-    private fun makeSaveDataOnElasticCall(
-        data: ElasticDataModel, elasticIndex: String, isFromCache: Boolean
-    ) {
-        try {
-            val checkIndexCall = apiInterface.checkIndexExists(elasticIndex)
-            checkIndexCall?.enqueue(object : Callback<ResponseData?> {
-                override fun onResponse(
-                    call: Call<ResponseData?>,
-                    response: Response<ResponseData?>
-                ) {
-                    if (response.isSuccessful) {
-                        saveDataToElastic(elasticIndex, data, isFromCache)
-                    } else if (response.code() == 404) {
-                        createIndexAndRetry(elasticIndex, data, isFromCache)
-                    } else {
-                        Logger.logError(TAG, "Failed to check index existence: ${response.code()}")
-                    }
-                }
-
-                override fun onFailure(call: Call<ResponseData?>, t: Throwable) {
-                    handleFailure(t, data, isFromCache)
-                }
-            })
-        } catch (e: Exception) {
-            handleFailure(data, isFromCache)
-            Logger.logError(TAG, "Error making save data on ElasticSearch call $e")
-        }
-    }
-
-    private fun saveDataToElastic(
-        elasticIndex: String,
+    private fun makeSaveDataOnLogstashCall(
         data: ElasticDataModel,
+        elasticIndex: String,
         isFromCache: Boolean
     ) {
-        val call = apiInterface.saveData(elasticIndex, data)
-        call?.enqueue(object : Callback<ResponseData?> {
-            override fun onResponse(call: Call<ResponseData?>, response: Response<ResponseData?>) {
-                handleResponse(response, data, isFromCache)
-            }
-
-            override fun onFailure(call: Call<ResponseData?>, t: Throwable) {
-                handleFailure(t, data, isFromCache)
-            }
-        })
-    }
-
-    private fun createIndexAndRetry(
-        elasticIndex: String,
-        data: ElasticDataModel,
-        isFromCache: Boolean
-    ) {
-        val createIndexCall = apiInterface.createIndex(elasticIndex)
-        createIndexCall?.enqueue(object : Callback<ResponseData?> {
-            override fun onResponse(call: Call<ResponseData?>, response: Response<ResponseData?>) {
+        ioScope.launch {
+            try {
+                val response = logstashApiInterface.sendToLogstash(ElasticDataRequest(elasticIndex, data))
                 if (response.isSuccessful) {
-                    makeSaveDataOnElasticCall(data, elasticIndex, isFromCache)
+                    Logger.logDebug(TAG, "Logstash upload success. Removing from DB...")
+                    roomExecutor.execute { appDatabase.elasticDataDao().delete(data) }
                 } else {
-                    Logger.logError(TAG, "Failed to create index: ${response.code()}")
+                    Logger.logError(TAG, "Logstash upload failed (code=${response.code()})")
+                    handleFailure(data, isFromCache)
                 }
+            } catch (e: Exception) {
+                Logger.logError(TAG, "Logstash upload exception: ${e.message}")
+                handleFailure(data, isFromCache)
             }
-
-            override fun onFailure(call: Call<ResponseData?>, t: Throwable) {
-                Logger.logError(TAG, "Error creating index $t")
-            }
-        })
-    }
-
-    private fun handleResponse(
-        response: Response<ResponseData?>, data: ElasticDataModel, isFromCache: Boolean
-    ) {
-        Logger.logDebug(TAG, "Response code: ${response.code()}")
-        if (response.isSuccessful) {
-            Logger.logDebug(TAG, "Success. Removing from DB...")
-            roomExecutor.execute { appDatabase.elasticDataDao().delete(data) }
-        } else if (!isFromCache) {
-            Logger.logDebug(TAG, "Not success. Adding to DB...")
-            roomExecutor.execute { appDatabase.elasticDataDao().insert(data) }
-        }
-    }
-
-    private fun handleFailure(t: Throwable, data: ElasticDataModel, isFromCache: Boolean) {
-        if (!isFromCache) {
-            Logger.logDebug(TAG, "Failure. Adding to DB... $t")
-            roomExecutor.execute { appDatabase.elasticDataDao().insert(data) }
         }
     }
 
@@ -208,5 +138,4 @@ class DataManagerImp @Inject constructor(
             roomExecutor.execute { appDatabase.elasticDataDao().insert(data) }
         }
     }
-
 }

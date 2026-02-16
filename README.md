@@ -57,9 +57,8 @@ Users can deny this permission; however, if denied, the agent will operate with 
 
 Create a `local.properties` file in the project root with the following variables:
 
-- `ELASTIC_HOST`: Elastic Cloud host URL
-- `ELASTIC_USER`: Username for Elastic Cloud
-- `ELASTIC_PASS`: Password for Elastic Cloud
+- `BASE_URL`: Backend base URL for Androbeat API (example: `https://10.0.2.2:8000/`)
+- `LOGSTASH_URL`: Logstash input URL (local Docker example: `http://10.0.2.2:8080/`)
 - `DEBUG_EXTRACTORS`: Enable/disable debug logging for data extractors (`true`/`false`)
 - `DEBUG_RETROFIT`: Enable/disable debug logging for Retrofit (`true`/`false`)
 - `DEBUG_SENSORS`: Enable/disable debug logging for sensors (`true`/`false`)
@@ -95,4 +94,20 @@ Contributions are welcome! Please open an issue or pull request and follow the [
 ## License
 
 This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). See [LICENSE](LICENSE) for details.
+### Local Docker Stack (Logstash + Elasticsearch)
 
+For a zero-maintenance local pipeline (`beat -> logstash -> elastic`), run:
+
+```bash
+docker compose -f docker-compose.logstash.yml up -d
+```
+
+Then configure `LOGSTASH_URL=http://10.0.2.2:8080/`.
+
+Useful checks:
+
+```bash
+docker compose -f docker-compose.logstash.yml ps
+curl http://localhost:9200
+curl http://localhost:9600
+```

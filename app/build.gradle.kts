@@ -16,7 +16,7 @@ kotlin {
 
 android {
     namespace = "com.androbeat.androbeatagent"
-    compileSdk = 35
+    compileSdk = 36
 
     packaging {
         resources.excludes.addAll(
@@ -32,25 +32,32 @@ android {
     defaultConfig {
         applicationId = "com.androbeat.androbeatagent"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 5
         versionName = "1.1.5"
 
         testInstrumentationRunner = "com.androbeat.androbeatagent.HiltTestRunner"
 
         val properties = Properties().apply {
-            load(rootProject.file("local.properties").reader())
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                load(localPropertiesFile.reader())
+            }
         }
 
-        buildConfigField("String", "ELASTIC_HOST", properties["ELASTIC_HOST"].toString())
-        buildConfigField("String", "ELASTIC_USER", properties["ELASTIC_USER"].toString())
-        buildConfigField("String", "ELASTIC_PASS", properties["ELASTIC_PASS"].toString())
-        buildConfigField("Boolean", "DEBUG_SENSORS", properties["DEBUG_SENSORS"].toString())
-        buildConfigField("Boolean", "DEBUG_EXTRACTORS", properties["DEBUG_EXTRACTORS"].toString())
-        buildConfigField("Boolean", "READ_LOGS", properties["READ_LOGS"].toString())
-        buildConfigField("Boolean", "DEBUG_RETROFIT", properties["DEBUG_RETROFIT"].toString())
-        buildConfigField("String", "ENROLLMENT_TOKEN", properties["ENROLLMENT_TOKEN"].toString()
-        )
+        fun stringProp(key: String, default: String = ""): String =
+            "\"${properties.getProperty(key, default)}\""
+
+        fun booleanProp(key: String, default: String = "false"): String =
+            properties.getProperty(key, default)
+
+        buildConfigField("String", "BASE_URL", stringProp("BASE_URL", "https://10.0.2.2:8000/"))
+        buildConfigField("String", "LOGSTASH_URL", stringProp("LOGSTASH_URL", "http://10.0.2.2:8080/"))
+        buildConfigField("Boolean", "DEBUG_SENSORS", booleanProp("DEBUG_SENSORS"))
+        buildConfigField("Boolean", "DEBUG_EXTRACTORS", booleanProp("DEBUG_EXTRACTORS"))
+        buildConfigField("Boolean", "READ_LOGS", booleanProp("READ_LOGS"))
+        buildConfigField("Boolean", "DEBUG_RETROFIT", booleanProp("DEBUG_RETROFIT"))
+        buildConfigField("String", "ENROLLMENT_TOKEN", stringProp("ENROLLMENT_TOKEN"))
     }
 
     buildTypes {
@@ -67,8 +74,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     composeOptions {
@@ -76,7 +83,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     buildFeatures {
@@ -264,6 +271,7 @@ val coreTestingVersion = "2.1.0"
 val espressoCoreVersion = "3.6.1"
 val gsonVersion = "2.12.1"
 val hiltVersion = "2.55"
+val hiltWorkVersion = "1.2.0"
 val junit4Version = "4.13.2"
 val junitExtVersion = "1.2.1"
 val junitVersion = "4.13.2"
@@ -295,6 +303,7 @@ dependencies {
     implementation("androidx.annotation:annotation:$annotationVersion")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("com.google.android.gms:play-services-fitness:$playServicesFitnessVersion")
     implementation("androidx.test.uiautomator:uiautomator:2.4.0-alpha01")
     implementation("com.google.android.gms:play-services-ads-identifier:18.2.0")
@@ -316,6 +325,7 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment:$navigationVersion")
     implementation("androidx.navigation:navigation-ui-ktx:$navigationVersion")
     implementation("com.google.dagger:hilt-android:$hiltVersion")
+    implementation("androidx.hilt:hilt-work:$hiltWorkVersion")
     implementation("androidx.work:work-runtime:$workVersion")
     implementation("androidx.work:work-runtime-ktx:$workVersion")
     kapt("androidx.room:room-runtime:$roomVersion")
@@ -326,6 +336,7 @@ dependencies {
     testImplementation("junit:junit:$junit4Version")
     androidTestImplementation("androidx.test.ext:junit:$junitExtVersion")
     kapt("com.google.dagger:hilt-compiler:$hiltVersion")
+    kapt("androidx.hilt:hilt-compiler:$hiltWorkVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinStdlibVersion")
     implementation("androidx.compose.runtime:runtime:$composeRuntimeVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleViewModelKtxVersion")

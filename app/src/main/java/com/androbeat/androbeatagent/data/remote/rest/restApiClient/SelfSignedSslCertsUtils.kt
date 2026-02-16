@@ -1,6 +1,7 @@
 package com.androbeat.androbeatagent.data.remote.rest.restApiClient
 
 import android.content.Context
+import com.androbeat.androbeatagent.BuildConfig
 import com.androbeat.androbeatagent.utils.ApplicationStatus
 import okhttp3.OkHttpClient
 import java.io.InputStream
@@ -39,10 +40,14 @@ object SelfSignedSslCertsUtils {
             }
             ApplicationStatus.postOK()
 
-            return OkHttpClient.Builder()
+            val builder = OkHttpClient.Builder()
                 .sslSocketFactory(sslContext.socketFactory, trustManager)
-                .hostnameVerifier { _, _ -> true }  // Accept all hostnames until have server
-                .build()
+
+            if (BuildConfig.DEBUG) {
+                builder.hostnameVerifier { _, _ -> true }
+            }
+
+            return builder.build()
 
         } catch (e: Exception) {
             //Logger.logError("SSL", "Error creating SSL client $e")

@@ -20,12 +20,23 @@ class AccelerometerSensor(context: Context?, sensorType: Int) :
 
     init {
         super.setOnSensorValuesChangedListener { values: FloatArray? ->
-            accelerometerSensorModel = AxisSensorModel(values!![0], values[1], values[2])
-            if (BuildConfig.DEBUG_SENSORS) {
-                Logger.logInfo(
-                    TAG,
-                    String.format(Locale.US, "Accelerometer{%.4f %.4f %.4f}", values[0], values[1], values[2])
-                )
+            if ((values?.size ?: 0) >= 3) {
+                val x = values?.getOrNull(0) ?: 0f
+                val y = values?.getOrNull(1) ?: 0f
+                val z = values?.getOrNull(2) ?: 0f
+                accelerometerSensorModel = AxisSensorModel(x, y, z)
+                if (BuildConfig.DEBUG_SENSORS) {
+                    Logger.logInfo(
+                        TAG,
+                        String.format(
+                            Locale.US,
+                            "Accelerometer{%.4f %.4f %.4f}",
+                            x,
+                            y,
+                            z
+                        )
+                    )
+                }
             }
         }
         register()

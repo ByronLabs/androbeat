@@ -16,8 +16,10 @@ class ProximitySensor(context: Context?, sensorType: Int) :
 
     init {
         super.setOnSensorValuesChangedListener { values: FloatArray? ->
-            proximitySensorModel = values!![0] == 0f
-            Logger.logInfo(TAG, String.format("Proximity{%b}", proximitySensorModel))
+            values?.firstOrNull()?.let { proximityValue ->
+                proximitySensorModel = proximityValue == 0f
+                Logger.logInfo(TAG, String.format("Proximity{%b}", proximitySensorModel))
+            }
         }
         register()
     }

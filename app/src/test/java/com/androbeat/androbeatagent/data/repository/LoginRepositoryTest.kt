@@ -29,11 +29,13 @@ class LoginRepositoryTest {
         val token = "test_token"
         val deviceId = "test_device_id"
         val model = "test_model"
-        val mainAccountName = "test_main_account"
         val manufacturer = "test_manufacturer"
+        val mainAccountName = "test@example.com"
         val response = Result.Success(true)
 
-        coEvery { loginDataSource.enroll(token, deviceId, model, manufacturer, mainAccountName) } returns response
+        coEvery {
+            loginDataSource.enroll(token, deviceId, model, manufacturer, mainAccountName)
+        } returns response
 
         val result = loginRepository.enroll(token, deviceId, model, manufacturer, mainAccountName)
 
@@ -47,11 +49,13 @@ class LoginRepositoryTest {
         val token = "test_token"
         val deviceId = "test_device_id"
         val model = "test_model"
-        val mainAccountName = "test_main_account"
         val manufacturer = "test_manufacturer"
+        val mainAccountName = "test@example.com"
         val response = Result.Error(Exception("Error"))
 
-        coEvery { loginDataSource.enroll(token, deviceId, model, manufacturer, mainAccountName) } returns response
+        coEvery {
+            loginDataSource.enroll(token, deviceId, model, manufacturer, mainAccountName)
+        } returns response
 
         val result = loginRepository.enroll(token, deviceId, model, manufacturer, mainAccountName)
 

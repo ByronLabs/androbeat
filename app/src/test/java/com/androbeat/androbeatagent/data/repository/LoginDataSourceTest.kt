@@ -1,110 +1,103 @@
-// LoginDataSourceTest.kt
 package com.androbeat.androbeatagent.data.repository
 
 import com.androbeat.androbeatagent.data.daos.ClientIdDao
 import com.androbeat.androbeatagent.data.daos.DeviceIdDao
 import com.androbeat.androbeatagent.data.model.models.Result
-import com.androbeat.androbeatagent.data.model.models.communication.Device
+import com.androbeat.androbeatagent.data.remote.rest.restApiClient.ITokenManager
 import com.androbeat.androbeatagent.data.remote.rest.restApiClient.RestApiInterface
-import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.Runs
+import io.mockk.verify
 import io.mockk.unmockkAll
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody.Companion.toResponseBody
-import okio.IOException
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import retrofit2.Call
 import retrofit2.Response
-
 
 class LoginDataSourceTest {
 
     private lateinit var loginDataSource: LoginDataSource
+    private lateinit var apiService: RestApiInterface
     private lateinit var database: AppDatabase
     private lateinit var clientIdDao: ClientIdDao
     private lateinit var deviceIdDao: DeviceIdDao
+    private lateinit var tokenManager: ITokenManager
 
     @Before
     fun setUp() {
+        apiService = mockk()
         database = mockk()
-        database = mockk()
-        clientIdDao = mockk()
-        deviceIdDao = mockk()
+        clientIdDao = mockk(relaxed = true)
+        deviceIdDao = mockk(relaxed = true)
+        tokenManager = mockk(relaxed = true)
 
         every { database.clientIdDao() } returns clientIdDao
         every { database.deviceIdDao() } returns deviceIdDao
 
+        loginDataSource = LoginDataSource(apiService, database, tokenManager)
     }
 
     @Test
-    fun testEnrollSuccess(): Unit = runBlocking {
-        val device = Device(
-            token = "test_token",
-            deviceId = "test_device_id",
-            model = "test_model",
-            mainAccountName = "test_main_account",
-            manufacturer = "test_manufacturer",
-            clientId = "test_device_idtest_tokentest_model"
+    fun testEnrollSuccess() = runBlocking {
+        val registerCall = mockk<Call<String>>()
+        every { apiService.registerDevice(any()) } returns registerCall
+        every { registerCall.execute() } returns Response.success("{\"jwt_token\":\"jwt\",\"refresh_token\":\"refresh\"}")
+        every { tokenManager.setEmail(any()) } just Runs
+
+        val result = loginDataSource.enroll(
+            "test_token",
+            "test_device_id",
+            "test_model",
+            "test_manufacturer",
+            "test@example.com"
         )
-
-        coEvery { apiService.registerDevice(any()).execute() } returns Response.success("true")
-        coEvery { database.deviceIdDao().insertOrUpdateDeviceId(any()) } returns Unit
-        coEvery { clientIdDao.insertClientId(any()) } just Runs
-        coEvery { deviceIdDao.insertDeviceId(any()) } just Runs
-
-        val result = loginDataSource.enroll("test_token", "test_device_id",
-            "test_model")
 
         assertTrue(result is Result.Success)
-        assertEquals(true, (result as Result.Success).data)
-
+        coVerify(exactly = 1) { clientIdDao.insertClientId(any()) }
+        coVerify(exactly = 1) { deviceIdDao.insertOrUpdateDeviceId(any()) }
+        verify(exactly = 1) { apiService.registerDevice(any()) }
+        verify(exactly = 1) { tokenManager.setEmail("test@example.com") }
     }
 
     @Test
-    fun testEnrollFailure() = runBlocking {
-        val device = Device(
-            token = "test_token",
-            deviceId = "test_device_id",
-            model = "test_model",
-            mainAccountName = "test_main_account",
-            manufacturer = "test_manufacturer",
-            clientId = "test_device_idtest_tokentest_model"
-        )
-        val response = Response.error<String>(400, "Error".toResponseBody(null))
+    fun testCheckRemoteTokenStatusSuccess() = runBlocking {
+        val call = mockk<Call<String>>()
+        every { apiService.checkTokenStatus("test_token") } returns call
+        every { call.execute() } returns Response.success("true")
 
-        coEvery { apiService.registerDevice(device).execute() } returns response
-        val result = loginDataSource.enroll("test_token", "test_device_id",
-            "test_model", "test_manufacturer", "test_main_account")
+        val result = loginDataSource.checkRemoteTokenStatus("test_token")
 
-        assertTrue(result is Result.Error)
-        coVerify { apiService.registerDevice(device).execute() }
+        assertTrue(result is Result.Success)
     }
 
     @Test
-    fun testEnrollException() = runBlocking {
-        val device = Device(
-            token = "test_token",
-            deviceId = "test_device_id",
-            model = "test_model",
-            mainAccountName = "test_main_account",
-            manufacturer = "test_manufacturer",
-            clientId = "test_device_idtest_tokentest_model"
-        )
+    fun testCheckRemoteTokenStatusFailure() = runBlocking {
+        val call = mockk<Call<String>>()
+        every { apiService.checkTokenStatus("test_token") } returns call
+        every { call.execute() } returns Response.error(400, "Error".toResponseBody(null))
 
-        coEvery { apiService.registerDevice(device).execute() } throws IOException("Network error")
-
-        val result = loginDataSource.enroll("test_token", "test_device_id",
-            "test_model", "test_manufacturer", "test_main_account")
+        val result = loginDataSource.checkRemoteTokenStatus("test_token")
 
         assertTrue(result is Result.Error)
-        coVerify { apiService.registerDevice(device).execute() }
+    }
+
+    @Test
+    fun testCheckRemoteTokenStatusException() = runBlocking {
+        val call = mockk<Call<String>>()
+        every { apiService.checkTokenStatus("test_token") } returns call
+        every { call.execute() } throws RuntimeException("Network error")
+
+        val result = loginDataSource.checkRemoteTokenStatus("test_token")
+
+        assertTrue(result is Result.Error)
     }
 
     @After

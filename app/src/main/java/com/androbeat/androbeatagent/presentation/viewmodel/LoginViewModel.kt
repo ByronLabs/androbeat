@@ -45,7 +45,7 @@ class LoginViewModel @Inject constructor(
             }
             val deviceId = adInfo.id ?: "unknown_device_id"
 
-            val result = loginRepository.enroll(token, deviceId, model)
+            val result = loginRepository.enroll(token, deviceId, model, manufacturer, mainAccountName)
 
             if (result is Result.Success) {
                 _loginResult.value = LoginResult.Success(result.data)

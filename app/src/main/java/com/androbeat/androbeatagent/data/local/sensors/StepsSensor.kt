@@ -17,8 +17,10 @@ class StepsSensor(context: Context?, sensorType: Int) :
 
     init {
         super.setOnSensorValuesChangedListener { values: FloatArray? ->
-            stepsSensorModel = values!![0]
-            Logger.logInfo(TAG,String.format(Locale.US,"Steps{%.4f}", values[0]))
+            values?.firstOrNull()?.let { stepsValue ->
+                stepsSensorModel = stepsValue
+                Logger.logInfo(TAG, String.format(Locale.US, "Steps{%.4f}", stepsValue))
+            }
         }
         register()
     }
@@ -29,7 +31,7 @@ class StepsSensor(context: Context?, sensorType: Int) :
         get() = stepsSensorModel
 
     companion object {
-        private val TAG: String = HumiditySensor::class.java.simpleName
+        private val TAG: String = StepsSensor::class.java.simpleName
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)

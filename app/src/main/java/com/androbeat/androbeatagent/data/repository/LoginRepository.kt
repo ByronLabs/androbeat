@@ -15,8 +15,14 @@ class LoginRepository @Inject constructor(
 
     private var user: LoggedInUser? = null
 
-    suspend fun enroll(token: String, deviceId: String, model: String): Result<Boolean> {
-        return dataSource.enroll(token, deviceId, model)
+    suspend fun enroll(
+        token: String,
+        deviceId: String,
+        model: String,
+        manufacturer: String,
+        mainAccountName: String
+    ): Result<Boolean> {
+        return dataSource.enroll(token, deviceId, model, manufacturer, mainAccountName)
     }
 
     suspend fun checkRemoteTokenStatus(token: String): Result<Boolean> {

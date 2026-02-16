@@ -12,6 +12,7 @@ import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.util.Locale
 
 class BatteryStatisticsTest {
 
@@ -53,7 +54,7 @@ class BatteryStatisticsTest {
             )
         } returns BatteryManager.BATTERY_HEALTH_UNKNOWN
 
-        val expectedBatteryData = "Battery{true USB 50,0000 4000mV 30.0°C Unknown}"
+        val expectedBatteryData = "Battery{true USB ${"%.4f".format(Locale.getDefault(), 50f)} 4000mV 30.0°C Unknown}"
         val actualBatteryData = batteryStatistics.getBatteryStatistics()
 
         assertEquals(expectedBatteryData, actualBatteryData)
@@ -86,7 +87,7 @@ class BatteryStatisticsTest {
             )
         } returns BatteryManager.BATTERY_HEALTH_UNKNOWN
 
-        val expectedStatistics = "Battery{true USB 50,0000 4000mV 30.0°C Unknown}"
+        val expectedStatistics = "Battery{true USB ${"%.4f".format(Locale.getDefault(), 50f)} 4000mV 30.0°C Unknown}"
         assertEquals(expectedStatistics, batteryStatistics.statistics)
     }
 

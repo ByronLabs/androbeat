@@ -1,9 +1,9 @@
 package com.androbeat.androbeatagent.data
 
 import android.content.Context
+import com.androbeat.androbeatagent.data.remote.rest.logstash.LogstashApiInterface
 import com.androbeat.androbeatagent.data.repository.AppDatabase
 import com.androbeat.androbeatagent.data.repository.managers.DataManagerImp
-import com.androbeat.androbeatagent.domain.elastic.ElasticApiInterface
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.mockk
@@ -22,7 +22,7 @@ class DataManagerImpTest {
     @RelaxedMockK
     private lateinit var roomExecutor: ExecutorService
     @RelaxedMockK
-    private lateinit var apiInterface: ElasticApiInterface
+    private lateinit var logstashApiInterface: LogstashApiInterface
     @RelaxedMockK
     private lateinit var appDatabase: AppDatabase
     private lateinit var dateFormatter: SimpleDateFormat
@@ -32,11 +32,17 @@ class DataManagerImpTest {
         MockKAnnotations.init(this)
         context = mockk<Context>()
         roomExecutor = mockk<ExecutorService>()
-        apiInterface = mockk<ElasticApiInterface>()
+        logstashApiInterface = mockk<LogstashApiInterface>()
         appDatabase = mockk<AppDatabase>()
         dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
 
-        dataManager = DataManagerImp(context, roomExecutor, apiInterface, appDatabase, dateFormatter)
+        dataManager = DataManagerImp(
+            context,
+            roomExecutor,
+            logstashApiInterface,
+            appDatabase,
+            dateFormatter
+        )
     }
 
 

@@ -1,10 +1,10 @@
 package com.androbeat.androbeatagent.di.hiltModules
 
 import android.content.Context
+import com.androbeat.androbeatagent.data.remote.rest.logstash.LogstashApiInterface
 import com.androbeat.androbeatagent.data.repository.AppDatabase
 import com.androbeat.androbeatagent.data.repository.managers.DataManagerImp
 import com.androbeat.androbeatagent.domain.data.DataManager
-import com.androbeat.androbeatagent.domain.elastic.ElasticApiInterface
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,11 +21,11 @@ import javax.inject.Singleton
 object DataModule {
     @Provides
     fun dataModuleProvider(@ApplicationContext context: Context, @Named("RoomExecutor") roomExecutor: ExecutorService,
-                           apiInterface: ElasticApiInterface,
+                           logstashApiInterface: LogstashApiInterface,
                            appDatabase: AppDatabase,
                            dateFormatter: SimpleDateFormat
     ): DataManager {
-        return DataManagerImp(context,roomExecutor, apiInterface, appDatabase,dateFormatter)
+        return DataManagerImp(context, roomExecutor, logstashApiInterface, appDatabase, dateFormatter)
     }
 
     @Provides

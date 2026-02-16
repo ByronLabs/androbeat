@@ -1,7 +1,7 @@
 
 plugins {
-    id("com.android.application") version "8.6.0" apply false
-    id("com.android.library") version "8.6.0" apply false
+    id("com.android.application") version "8.7.3" apply false
+    id("com.android.library") version "8.7.3" apply false
     id("org.jetbrains.kotlin.android") version "2.0.20" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
     id("jacoco")
@@ -20,9 +20,9 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.5.2")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.51")
+        classpath("com.android.tools.build:gradle:8.7.3")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.20")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.55")
         classpath("org.jacoco:org.jacoco.core:$jacocoVersion")
     }
 }

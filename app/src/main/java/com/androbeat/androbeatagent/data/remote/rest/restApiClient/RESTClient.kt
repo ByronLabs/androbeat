@@ -1,20 +1,23 @@
 package com.androbeat.androbeatagent.data.remote.rest.restApiClient
 
 import android.content.Context
+import com.androbeat.androbeatagent.BuildConfig
 import com.androbeat.androbeatagent.R
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RESTClient {
 
-    private const val BASE_URL = "https://10.0.2.2:8000/"
-
     fun getRetrofit(context: Context): Retrofit {
 
+        val tokenManager = SecureTokenManager(context)
         val client = SelfSignedSslCertsUtils.getSelfSignedSslClient(context, R.raw.cert)
+            .newBuilder()
+            .addInterceptor(JwtInterceptor(tokenManager, SessionManager(tokenManager)))
+            .build()
 
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

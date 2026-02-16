@@ -2,6 +2,7 @@ package com.androbeat.androbeatagent.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.androbeat.androbeatagent.data.remote.rest.restApiClient.ITokenManager
 import com.androbeat.androbeatagent.data.remote.rest.restApiClient.RestApiInterface
 import com.androbeat.androbeatagent.data.repository.AppDatabase
 import com.androbeat.androbeatagent.data.repository.LoginDataSource
@@ -14,7 +15,8 @@ import javax.inject.Inject
  */
 class LoginViewModelFactory @Inject constructor(
     private val apiService: RestApiInterface,
-    private val appDatabase: AppDatabase
+    private val appDatabase: AppDatabase,
+    private val tokenManager: ITokenManager
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -22,7 +24,7 @@ class LoginViewModelFactory @Inject constructor(
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             return LoginViewModel(
                 loginRepository = LoginRepository(
-                    dataSource = LoginDataSource(apiService, appDatabase)
+                    dataSource = LoginDataSource(apiService, appDatabase, tokenManager)
                 ),
                 appDatabase = appDatabase
             ) as T

@@ -11,18 +11,29 @@ import java.util.Locale
 import java.util.function.Consumer
 
 class GyroscopeSensor(context: Context?, sensorType: Int) : AndroidSensor(
-    context!!, PackageManager.FEATURE_SENSOR_GYROSCOPE, sensorType
+    context, PackageManager.FEATURE_SENSOR_GYROSCOPE, sensorType
 ), DataProvider<AxisSensorModel?> {
 
     var gyroscopeSensorModel: AxisSensorModel = AxisSensorModel(0f, 0f, 0f)
 
     init {
         super.setOnSensorValuesChangedListener { values: FloatArray? ->
-            gyroscopeSensorModel = AxisSensorModel(values!![0], values[1], values[2])
-            Logger.logInfo(
-                TAG,
-                String.format(Locale.US,"Gyroscope{%.4f %.4f %.4f}", values[0], values[1], values[2])
-            )
+            if ((values?.size ?: 0) >= 3) {
+                val x = values?.getOrNull(0) ?: 0f
+                val y = values?.getOrNull(1) ?: 0f
+                val z = values?.getOrNull(2) ?: 0f
+                gyroscopeSensorModel = AxisSensorModel(x, y, z)
+                Logger.logInfo(
+                    TAG,
+                    String.format(
+                        Locale.US,
+                        "Gyroscope{%.4f %.4f %.4f}",
+                        x,
+                        y,
+                        z
+                    )
+                )
+            }
         }
         register()
     }

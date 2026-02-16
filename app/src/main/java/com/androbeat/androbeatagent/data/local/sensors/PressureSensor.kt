@@ -18,8 +18,10 @@ class PressureSensor(context: Context?, sensorType: Int) :
 
     init {
         super.setOnSensorValuesChangedListener { values: FloatArray? ->
-            pressureSensorModel = values!![0]
-            Logger.logInfo(TAG, String.format(Locale.US,"Pressure{%.4f}", values[0]))
+            values?.firstOrNull()?.let { pressureValue ->
+                pressureSensorModel = pressureValue
+                Logger.logInfo(TAG, String.format(Locale.US, "Pressure{%.4f}", pressureValue))
+            }
         }
         register()
     }

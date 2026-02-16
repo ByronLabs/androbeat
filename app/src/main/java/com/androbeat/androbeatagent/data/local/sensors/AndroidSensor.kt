@@ -20,10 +20,10 @@ open class AndroidSensor(
         private get() = sensorFeature?.let { context?.packageManager?.hasSystemFeature(it) } == true
 
     override fun register() {
-        sensorManager = context?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensor = sensorManager!!.getDefaultSensor(sensorType)
+        sensorManager = context?.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        sensor = sensorManager?.getDefaultSensor(sensorType)
         if (sensor != null) {
-            sensorManager!!.registerListener(this, sensor, Int.MAX_VALUE, Int.MAX_VALUE)
+            sensorManager?.registerListener(this, sensor, Int.MAX_VALUE, Int.MAX_VALUE)
         }
     }
 
@@ -31,17 +31,17 @@ open class AndroidSensor(
         if (!isSensorAvailable || sensorManager == null) {
             return
         }
-        sensorManager!!.unregisterListener(this)
+        sensorManager?.unregisterListener(this)
     }
 
     override val power: Float
         get() = if (!isSensorAvailable || sensor == null) {
             (-1).toFloat()
-        } else sensor!!.power
+        } else sensor?.power ?: 0f
     override val isWakeUpSensor: Boolean
         get() = if (!isSensorAvailable || sensor == null) {
             false
-        } else sensor!!.isWakeUpSensor
+        } else sensor?.isWakeUpSensor ?: false
 
      override fun setOnSensorValuesChangedListener(listener: Consumer<FloatArray?>?) {
         onSensorValuesChangedListener = listener
@@ -52,15 +52,11 @@ open class AndroidSensor(
             return
         }
         if (onSensorValuesChangedListener != null) {
-            onSensorValuesChangedListener!!.accept(event.values)
+            onSensorValuesChangedListener?.accept(event.values)
         }
     }
 
     override fun onAccuracyChanged(sensor: Sensor, i: Int) {}
 
-    companion object {
-        private val TAG = AndroidSensor::class.java.simpleName
-    }
-    
-    
+    companion object
 }

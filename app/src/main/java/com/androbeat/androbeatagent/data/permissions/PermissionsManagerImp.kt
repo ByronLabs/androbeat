@@ -28,6 +28,8 @@ class PermissionsManagerImp @Inject constructor(
 
     companion object {
         const val LOG_TAG = "PermissionManager"
+        @Volatile
+        private var dndPermissionRequestedThisSession = false
     }
 
     override fun requestAppPermissions(requestCode: Int) {
@@ -100,7 +102,19 @@ class PermissionsManagerImp @Inject constructor(
     }
 
     override fun requestDoNotDisturbPermission(context: Context, activity: Activity) {
-        if (ActivityCompat.checkSelfPermission(
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            !notificationManager.isNotificationPolicyAccessGranted &&
+            !dndPermissionRequestedThisSession
+        ) {
+            dndPermissionRequestedThisSession = true
+            activity.startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
+            Logger.logDebug(LOG_TAG, "Notification policy access settings opened")
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
@@ -110,6 +124,10 @@ class PermissionsManagerImp @Inject constructor(
                 arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                 PERMISSIONS_REQUEST_CODE
             )
+        }
+
+        if (notificationManager.isNotificationPolicyAccessGranted) {
+            dndPermissionRequestedThisSession = false
         }
     }
 }

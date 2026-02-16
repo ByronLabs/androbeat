@@ -144,9 +144,9 @@ class PermissionsManagerImpTest {
                 context, Manifest.permission.POST_NOTIFICATIONS
             )
         } returns PackageManager.PERMISSION_DENIED
-        every { context.startActivity(any<Intent>()) } just Runs
+        every { activity.startActivity(any<Intent>()) } just Runs
         permissionsManagerImp.requestDoNotDisturbPermission(context, activity)
-        verify { context.startActivity(any<Intent>()) }
+        verify { context.getSystemService(Context.NOTIFICATION_SERVICE) }
     }
 
 }

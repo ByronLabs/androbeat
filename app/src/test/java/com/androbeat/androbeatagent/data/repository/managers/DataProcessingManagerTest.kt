@@ -1,10 +1,9 @@
 package com.androbeat.androbeatagent.data.repository.managers
 
 import android.content.Context
+import com.androbeat.androbeatagent.data.remote.rest.logstash.LogstashApiInterface
 import com.androbeat.androbeatagent.data.repository.AppDatabase
-import com.androbeat.androbeatagent.domain.data.DataManager
 import com.androbeat.androbeatagent.domain.data.DataProvider
-import com.androbeat.androbeatagent.domain.elastic.ElasticApiInterface
 import io.mockk.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
@@ -33,7 +32,7 @@ class DataProcessingManagerTest {
 
     private lateinit var mockContext: Context
     private lateinit var mockRoomExecutor: ExecutorService
-    private lateinit var mockApiInterface: ElasticApiInterface
+    private lateinit var mockLogstashApiInterface: LogstashApiInterface
     private lateinit var mockAppDatabase: AppDatabase
     private lateinit var mockDateFormatter: SimpleDateFormat
 
@@ -41,14 +40,14 @@ class DataProcessingManagerTest {
     fun setUp() {
         mockContext = mockk()
         mockRoomExecutor = mockk()
-        mockApiInterface = mockk()
+        mockLogstashApiInterface = mockk(relaxed = true)
         mockAppDatabase = mockk()
         mockDateFormatter = mockk()
 
         dataManager = spyk(DataManagerImp(
             context = mockContext,
             roomExecutor = mockRoomExecutor,
-            apiInterface = mockApiInterface,
+            logstashApiInterface = mockLogstashApiInterface,
             appDatabase = mockAppDatabase,
             dateFormatter = mockDateFormatter
         ))

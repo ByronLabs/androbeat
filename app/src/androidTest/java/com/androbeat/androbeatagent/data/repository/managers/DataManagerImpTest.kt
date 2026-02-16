@@ -11,11 +11,10 @@ import com.androbeat.androbeatagent.data.logger.Logger
 import com.androbeat.androbeatagent.data.model.models.Client
 import com.androbeat.androbeatagent.data.model.models.DeviceId
 import com.androbeat.androbeatagent.data.model.models.elastic.ElasticDataModel
-import com.androbeat.androbeatagent.data.model.models.elastic.ResponseData
 import com.androbeat.androbeatagent.data.model.models.extractors.software.BasicConfigurationModel
+import com.androbeat.androbeatagent.data.remote.rest.logstash.LogstashApiInterface
 import com.androbeat.androbeatagent.data.repository.AppDatabase
 import com.androbeat.androbeatagent.domain.data.DataProvider
-import com.androbeat.androbeatagent.domain.elastic.ElasticApiInterface
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -27,7 +26,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
-import retrofit2.Callback
 import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -41,7 +39,7 @@ class DataManagerImpTest {
 
     private lateinit var context: Context
     private lateinit var roomExecutor: ExecutorService
-    private lateinit var apiInterface: ElasticApiInterface
+    private lateinit var logstashApiInterface: LogstashApiInterface
     private lateinit var appDatabase: AppDatabase
     private lateinit var dateFormatter: SimpleDateFormat
     private lateinit var dataManagerImp: DataManagerImp
@@ -52,7 +50,7 @@ class DataManagerImpTest {
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         roomExecutor = mockk()
-        apiInterface = mockk()
+        logstashApiInterface = mockk(relaxed = true)
         appDatabase = mockk()
         dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         logger = mockk(relaxed = true)
@@ -72,15 +70,10 @@ class DataManagerImpTest {
             runnable.run()
         }
 
-        coEvery { apiInterface.checkIndexExists(any()) } returns mockk {
-            every { enqueue(any()) } answers {
-                val callback = it.invocation.args[0] as Callback<ResponseData?>
-                callback.onResponse(mockk(), Response.success(mockk()))
-            }
-        }
+        coEvery { logstashApiInterface.sendToLogstash(any()) } returns Response.success(Unit)
 
         dataManagerImp =
-            DataManagerImp(context, roomExecutor, apiInterface, appDatabase, dateFormatter).apply {
+            DataManagerImp(context, roomExecutor, logstashApiInterface, appDatabase, dateFormatter).apply {
             }
 
 
@@ -89,18 +82,18 @@ class DataManagerImpTest {
     @Test
     fun testSaveDataOnElasticSearch() {
         val data = ElasticDataModel()
-        every { apiInterface.saveData(any(), any()) } returns mockk()
+        coEvery { logstashApiInterface.sendToLogstash(any()) } returns Response.success(Unit)
         dataManagerImp.saveDataOnElasticSearch(data, false)
-        coVerify { apiInterface.saveData(any(), data) }
+        coVerify { logstashApiInterface.sendToLogstash(any()) }
     }
 
     @Test
     fun testSaveDataOnElasticSearchWithoutParams() {
         val dataProvider = mockk<DataProvider<*>>(relaxed = true)
         dataManagerImp._providers.add(dataProvider)
-        every { apiInterface.saveData(any(), any()) } returns mockk()
+        coEvery { logstashApiInterface.sendToLogstash(any()) } returns Response.success(Unit)
         dataManagerImp.saveDataOnElasticSearch()
-        coVerify { apiInterface.saveData(any(), any<ElasticDataModel>()) }
+        coVerify { logstashApiInterface.sendToLogstash(any()) }
     }
 
     @Test

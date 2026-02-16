@@ -4,6 +4,8 @@ import android.app.Notification
 import android.app.Service
 import android.content.Context
 import android.os.PowerManager
+import androidx.work.WorkManager
+import com.androbeat.androbeatagent.data.work.ElasticWorkScheduler
 import com.androbeat.androbeatagent.domain.communication.NotificationHelper
 import com.androbeat.androbeatagent.domain.data.IServiceManager
 import com.androbeat.androbeatagent.utils.ServiceUtils
@@ -20,6 +22,7 @@ class ServiceManager @Inject constructor(
     override fun setupService() {
         setupNotification()
         acquireWakeLock()
+        ElasticWorkScheduler.schedulePeriodicFlush(WorkManager.getInstance(context))
     }
 
     private fun setupNotification() {
