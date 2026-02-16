@@ -7,24 +7,22 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.androbeat.androbeatagent.R
+import com.androbeat.androbeatagent.BuildConfig
 import com.androbeat.androbeatagent.data.logger.Logger
-import com.androbeat.androbeatagent.data.model.models.communication.ReinstallAgentRequest
-import com.androbeat.androbeatagent.data.remote.rest.restApiClient.RESTClient
-import com.androbeat.androbeatagent.data.remote.rest.restApiClient.RestApiInterface
 import com.androbeat.androbeatagent.data.repository.AppDatabase
 import com.androbeat.androbeatagent.databinding.ActivityReinstallBinding
 import com.androbeat.androbeatagent.presentation.WindowUtils.setTransparentStatusBarAndNavigationBar
 import dagger.hilt.android.AndroidEntryPoint
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class ReinstallActivity : AppCompatActivity() {
 
-    private lateinit var api: RestApiInterface
     private lateinit var binding: ActivityReinstallBinding
 
     @Inject
@@ -46,30 +44,27 @@ class ReinstallActivity : AppCompatActivity() {
             insets
         }
 
-        api = RESTClient.getRetrofit(this).create(RestApiInterface::class.java)
-
         binding.ReinstallButton.setOnClickListener {
-
             val token = binding.OriginalTokenTextInput.text.toString()
-            val accountName = binding.MainAccountTextInput.text.toString()
-            val email = binding.OriginalClientEmailTextInput.text.toString()
+            if (token.trim() != BuildConfig.ENROLLMENT_TOKEN.trim()) {
+                showErrorDialog()
+                return@setOnClickListener
+            }
 
-            val request = ReinstallAgentRequest(accountName, token, email)
-
-            api.reinstallAgent(request).enqueue(object : Callback<String> {
-                override fun onResponse(call: Call<String>, response: Response<String>) {
-                    if (response.isSuccessful) {
-                        startActivity(Intent(this@ReinstallActivity, LoginActivity::class.java))
-                    } else {
-                        showErrorDialog()
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        appDatabase.tokenDao().clear()
+                        appDatabase.clientIdDao().clear()
+                        appDatabase.deviceIdDao().clear()
                     }
-                }
-
-                override fun onFailure(call: Call<String>, t: Throwable) {
-                    Logger.logError("ReinstallActivity", "Error: ${t.message}")
+                    startActivity(Intent(this@ReinstallActivity, LoginActivity::class.java))
+                    finish()
+                } catch (e: Exception) {
+                    Logger.logError("ReinstallActivity", "Error: ${e.message}")
                     showErrorDialog()
                 }
-            })
+            }
         }
     }
 

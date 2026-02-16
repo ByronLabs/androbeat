@@ -51,7 +51,6 @@ android {
         fun booleanProp(key: String, default: String = "false"): String =
             properties.getProperty(key, default)
 
-        buildConfigField("String", "BASE_URL", stringProp("BASE_URL", "https://10.0.2.2:8000/"))
         buildConfigField("String", "LOGSTASH_URL", stringProp("LOGSTASH_URL", "http://10.0.2.2:8080/"))
         buildConfigField("Boolean", "DEBUG_SENSORS", booleanProp("DEBUG_SENSORS"))
         buildConfigField("Boolean", "DEBUG_EXTRACTORS", booleanProp("DEBUG_EXTRACTORS"))
@@ -303,7 +302,6 @@ dependencies {
     implementation("androidx.annotation:annotation:$annotationVersion")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("com.google.android.gms:play-services-fitness:$playServicesFitnessVersion")
     implementation("androidx.test.uiautomator:uiautomator:2.4.0-alpha01")
     implementation("com.google.android.gms:play-services-ads-identifier:18.2.0")

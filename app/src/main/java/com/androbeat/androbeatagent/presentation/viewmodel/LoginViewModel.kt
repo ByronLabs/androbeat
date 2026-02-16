@@ -76,13 +76,13 @@ class LoginViewModel @Inject constructor(
     suspend fun checkTokenStatus(): Boolean {
         val token = appDatabase.tokenDao().getToken()?.token ?: ""
         return withContext(Dispatchers.IO) {
-            loginRepository.checkRemoteTokenStatus(token) is Result.Success
+            loginRepository.checkTokenStatus(token) is Result.Success
         }
     }
 
     suspend fun isTokenExists(): Boolean {
         return withContext(Dispatchers.IO) {
-            appDatabase.tokenDao().getToken() != null
+            appDatabase.tokenDao().getToken()?.token?.isNotBlank() == true
         }
     }
 }

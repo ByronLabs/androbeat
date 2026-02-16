@@ -18,8 +18,6 @@ import com.androbeat.androbeatagent.R
 import com.androbeat.androbeatagent.data.local.BeatService
 import com.androbeat.androbeatagent.data.logger.Logger
 import com.androbeat.androbeatagent.data.model.models.DeviceId
-import com.androbeat.androbeatagent.data.remote.rest.restApiClient.RESTClient
-import com.androbeat.androbeatagent.data.remote.rest.restApiClient.RestApiInterface
 import com.androbeat.androbeatagent.data.repository.AppDatabase
 import com.androbeat.androbeatagent.databinding.FragmentStatusBinding
 import com.androbeat.androbeatagent.domain.permissions.PermissionsManager
@@ -41,9 +39,6 @@ class StatusFragment : Fragment(R.layout.fragment_status) {
     private var mAdminName: ComponentName? = null
     private var mDPM: DevicePolicyManager? = null
     private val viewModel: MainViewModel by viewModels()
-
-    @Inject
-    lateinit var api: RestApiInterface
 
     @Inject
     lateinit var permissionsManager: PermissionsManager
@@ -75,7 +70,6 @@ class StatusFragment : Fragment(R.layout.fragment_status) {
 
         checkAndUpdateSavedDeviceId()
         initializePermissionsManagerImp()
-        initRestClient()
         fetchAndSetClientId()
 
         startServiceIfNotRunning()
@@ -124,15 +118,8 @@ class StatusFragment : Fragment(R.layout.fragment_status) {
 
     private suspend fun updateDeviceId(storedDeviceId: String, actualDeviceId: String) {
         try {
-            val response = withContext(Dispatchers.IO) {
-                api.modifyDeviceId(storedDeviceId, actualDeviceId).execute()
-            }
-            if (response.isSuccessful) {
-                Logger.logDebug(LOG_TAG, "Device ID modified successfully")
-                appDatabase.deviceIdDao().updateDeviceId(DeviceId(1, actualDeviceId))
-            } else {
-                Logger.logError(LOG_TAG, "Failed to modify Device ID: ${response.errorBody()?.string()}")
-            }
+            Logger.logDebug(LOG_TAG, "Device ID changed locally from $storedDeviceId to $actualDeviceId")
+            appDatabase.deviceIdDao().updateDeviceId(DeviceId(1, actualDeviceId))
             ApplicationStatus.postOK()
         } catch (e: Exception) {
             ApplicationStatus.postError("Error modifying Device ID: ${e.message}")
@@ -142,10 +129,6 @@ class StatusFragment : Fragment(R.layout.fragment_status) {
 
     private fun initializePermissionsManagerImp() {
         permissionsManager.requestAppPermissions(PERMISSIONS_REQUEST_CODE)
-    }
-
-    private fun initRestClient() {
-        api = RESTClient.getRetrofit(requireContext()).create(RestApiInterface::class.java)
     }
 
     private fun startServiceIfNotRunning() {

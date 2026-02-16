@@ -21,4 +21,7 @@ interface DeviceIdDao {
 
     @Update
     suspend fun updateDeviceId(deviceId: DeviceId)
+
+    @Query("DELETE FROM deviceId")
+    suspend fun clear()
 }

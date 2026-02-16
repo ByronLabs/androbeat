@@ -25,8 +25,8 @@ class LoginRepository @Inject constructor(
         return dataSource.enroll(token, deviceId, model, manufacturer, mainAccountName)
     }
 
-    suspend fun checkRemoteTokenStatus(token: String): Result<Boolean> {
-        return dataSource.checkRemoteTokenStatus(token)
+    suspend fun checkTokenStatus(token: String): Result<Boolean> {
+        return dataSource.checkTokenStatus(token)
     }
 
     private fun setLoggedInUser(loggedInUser: LoggedInUser) {

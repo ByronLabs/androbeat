@@ -57,7 +57,6 @@ Users can deny this permission; however, if denied, the agent will operate with 
 
 Create a `local.properties` file in the project root with the following variables:
 
-- `BASE_URL`: Backend base URL for Androbeat API (example: `https://10.0.2.2:8000/`)
 - `LOGSTASH_URL`: Logstash input URL (local Docker example: `http://10.0.2.2:8080/`)
 - `DEBUG_EXTRACTORS`: Enable/disable debug logging for data extractors (`true`/`false`)
 - `DEBUG_RETROFIT`: Enable/disable debug logging for Retrofit (`true`/`false`)

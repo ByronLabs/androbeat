@@ -1,7 +1,5 @@
 package com.androbeat.androbeatagent.di.hiltModules
 
-import com.androbeat.androbeatagent.data.remote.rest.restApiClient.RestApiInterface
-import com.androbeat.androbeatagent.data.remote.rest.restApiClient.ITokenManager
 import com.androbeat.androbeatagent.data.repository.AppDatabase
 import com.androbeat.androbeatagent.data.repository.LoginDataSource
 import com.androbeat.androbeatagent.data.repository.LoginRepository
@@ -17,11 +15,7 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideLoginRepository(
-        apiService: RestApiInterface,
-        database: AppDatabase,
-        tokenManager: ITokenManager
-    ): LoginRepository {
-        return LoginRepository(LoginDataSource(apiService, database, tokenManager))
+    fun provideLoginRepository(database: AppDatabase): LoginRepository {
+        return LoginRepository(LoginDataSource(database))
     }
 }

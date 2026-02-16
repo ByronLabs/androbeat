@@ -13,4 +13,7 @@ interface ClientIdDao {
 
     @Query("SELECT * FROM client_id WHERE id == 1 LIMIT 1")
     suspend fun getClientId(): Client?
+
+    @Query("DELETE FROM client_id")
+    suspend fun clear()
 }

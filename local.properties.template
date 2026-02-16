@@ -3,7 +3,6 @@ sdk.dir= #/home/user/Android/Sdk
 DEBUG_EXTRACTORS= #false
 DEBUG_RETROFIT= #false
 DEBUG_SENSORS= #false
-BASE_URL= #"https\://10.0.2.2:8000/"
 LOGSTASH_URL= #"http\://10.0.2.2:8080/"
 READ_LOGS= #true
 ENROLLMENT_TOKEN= #"TOKEN"
